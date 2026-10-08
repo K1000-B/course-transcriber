@@ -37,6 +37,7 @@ Inspect the actual repository before making assumptions; this table describes th
 
 ## 3. Non-negotiable architecture
 
+- **Exactly one application service:** `compose.yaml` must contain only the `transcriber` service. Keep the product terminal-only; do not add a GUI, native launcher, Electron, Node.js/npm, Tauri, IPC layer, browser container, or additional application service.
 - **Docker is the default runtime.** Do not require host-side Python, pip, virtual environments, FFmpeg, or system packages.
 - **CPU-only is a product decision.** Use `device="cpu"` and `fp16=False` for inference; do not add CUDA, MPS, GPU discovery, GPU Docker images, or device-dependent code unless the user explicitly changes the requirement.
 - **Multi-architecture:** support Linux `amd64` and `arm64` images. Do not force `platform: linux/amd64`, introduce x86-only binaries, or assume WSL is available on macOS.

@@ -192,6 +192,12 @@ The interactive menu appears:
 
 The application also discovers supported files inside subfolders of `input/`.
 
+### Downloading a Polimi recording
+
+Use your usual browser to sign in to Polimi and open a lecture recording you are authorized to access. When Polimi provides a download option, download the recording normally and place the resulting audio or video file in `input/`. Then use **Option A** above to select it by filename.
+
+Course Transcriber does not automate sign-in, copy browser cookies, inspect network traffic, or bypass DRM. This keeps the application portable and makes the downloaded local-file workflow the most reliable choice.
+
 ### Option B — Transcribe an MP4 / M3U8 URL
 
 1. Select `1` (**Transcribe a course**), then `1` (**Remote URL**).
@@ -346,7 +352,7 @@ Check that the file is inside **`input/`** (or one of its subdirectories) and th
 <details>
 <summary><strong>FFmpeg returns 403 / 404 / Connection failed / Invalid data</strong></summary>
 
-First, test with a known-good local MP4. If it works, the remote URL is likely the issue: expired links, access restrictions, inaccessible playlists, or incomplete downloads. This application does not bypass access controls.
+First, test with a known-good local MP4. If it works, the remote URL is likely the issue: expired links, access restrictions, inaccessible playlists, browser cookies, or incomplete downloads. This application does not bypass access controls or use browser authentication. Download a permitted recording with your usual browser and transcribe it from `input/` instead.
 
 </details>
 
