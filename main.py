@@ -99,43 +99,33 @@ def check_dependencies() -> None:
 # Input selection: do not use tkinter inside a headless Linux container.
 # -----------------------------------------------------------------------------
 def select_local_file() -> Path | None:
-    files = sorted(
+    files = list_local_media_files()
+    print("\nAvailable media files:\n")
+    if files:
+        for number, path in enumerate(files, start=1):
+            print(f"{number}. {path.relative_to(INPUT_DIR)}")
+    else:
+        print("No supported media files found in input/.")
+        print("Download a permitted recording, then place it in input/ and try again.")
+        input("\nPress Enter to return...")
+        return None
+
+    print("\n0. Back\n")
+    index = ask_index(len(files), "Select a file:\n> ")
+    return files[index] if index is not None else None
+
+
+def list_local_media_files() -> list[Path]:
+    """Return supported media files below input/ without modifying them."""
+    return sorted(
         (path for path in INPUT_DIR.rglob("*")
          if path.is_file() and path.suffix.lower() in MEDIA_EXTENSIONS),
         key=lambda path: str(path).lower(),
     )
-    print(f"\nLocal files in {INPUT_DIR}:")
-    if files:
-        for number, path in enumerate(files, start=1):
-            print(f"  {number:2}. {path.relative_to(INPUT_DIR)}")
-    else:
-        print("  (none: copy a video/audio file into the input/ folder)")
-
-    print("\nType a file number, a container-visible path, or 0 to cancel.")
-    answer = input("> ").strip().strip('"').strip("'")
-    if not answer or answer == "0":
-        return None
-
-    if answer.isdecimal():
-        index = int(answer) - 1
-        if not 0 <= index < len(files):
-            print("Invalid file number.")
-            return None
-        return files[index]
-
-    candidate = Path(answer).expanduser()
-    if not candidate.is_absolute():
-        candidate = INPUT_DIR / candidate
-    candidate = candidate.resolve()
-    if not candidate.is_file():
-        print(f"File not found inside the container: {candidate}")
-        print("Host paths are not automatically visible. Use the project's input/ folder.")
-        return None
-    return candidate
 
 
 def choose_source() -> tuple[str, str | Path] | None:
-    print("\nMedia source:\n  1. Remote URL (M3U8 / MP4)\n  2. Local file (input/)\n  0. Cancel")
+    print("\nSource:\n\n1. Remote URL (MP4 / M3U8)\n2. Local file from input/\n0. Back")
     choice = input("> ").strip()
     if choice == "1":
         url = input("Media URL: ").strip()
@@ -201,6 +191,12 @@ def extract_audio_segments(source_type: str, source: str | Path) -> list[Path]:
     print("\nExtracting and splitting audio (60-second chunks)...", flush=True)
     result = subprocess.run(command, capture_output=True, text=True, errors="replace")
     if result.returncode != 0:
+        if source_type == "url":
+            raise RuntimeError(
+                "FFmpeg could not access the remote media. Confirm that it is a direct, "
+                "currently accessible MP4 or M3U8 URL; webpage URLs, expired links, "
+                "cookies, and DRM are not supported."
+            )
         details = result.stderr.strip()
         raise RuntimeError(f"FFmpeg failed.\n{details or 'No error details returned.'}")
 
@@ -245,7 +241,8 @@ def choose_model() -> str | None:
 
 
 def get_device() -> str:
-    return "cuda" if torch.cuda.is_available() else "cpu"
+    """Keep inference deterministic and portable across every supported host."""
+    return "cpu"
 
 
 def load_whisper_model(name: str, device: str | None = None):
@@ -347,7 +344,7 @@ def transcribe_segments(model, segments: list[Path], language: str | None, parti
         for index, segment in enumerate(segments):
             timestamp = format_duration(index * SEGMENT_DURATION)
             print(f"[{index + 1}/{total}] {timestamp} | Transcribing...", flush=True)
-            options = {"verbose": False, "fp16": get_device() == "cuda"}
+            options = {"verbose": False, "fp16": False}
             if language is not None:
                 options["language"] = language
             result = model.transcribe(str(segment), **options)
@@ -405,8 +402,6 @@ def transcribe_course() -> None:
     finally:
         del instance
         gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
         clean_temp()
         print("Temporary audio files deleted; original input files untouched.")
 
@@ -426,8 +421,7 @@ def system_info() -> None:
     print(f"Export:       {EXPORT_DIR}")
     print(f"Models:       {MODELS_DIR}")
     print(f"Temporary:    {TEMP_DIR}")
-    if get_device() == "cpu":
-        print("\nDocker CPU mode: Apple MPS is not available in Linux containers.")
+    print("\nCPU-only inference is enforced.")
 
 
 def main() -> None:
