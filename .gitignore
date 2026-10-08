@@ -1,0 +1,25 @@
+# User data and generated files
+input/
+export/
+models/
+temp/
+
+# Secrets and local environments
+.env
+.env.*
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+

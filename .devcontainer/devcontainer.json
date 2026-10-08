@@ -1,0 +1,23 @@
+
+{
+  "name": "Course Transcriber",
+
+  "dockerComposeFile": "../compose.yaml",
+  "service": "transcriber",
+  "workspaceFolder": "/workspace",
+
+  "overrideCommand": true,
+  "shutdownAction": "stopCompose",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}

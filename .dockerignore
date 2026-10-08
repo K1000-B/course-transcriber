@@ -1,0 +1,14 @@
+
+.git/
+.vscode/
+__pycache__/
+*.pyc
+
+input/
+export/
+models/
+temp/
+
+.DS_Store
+.env
+.venv/

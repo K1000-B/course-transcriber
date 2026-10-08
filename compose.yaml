@@ -1,0 +1,21 @@
+
+services:
+  transcriber:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    working_dir: /workspace
+
+    stdin_open: true
+    tty: true
+    init: true
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+      TERM: xterm-256color
+
+    volumes:
+      - ./:/workspace
+
+    command: ["python", "-u", "main.py"]
